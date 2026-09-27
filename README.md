@@ -1,5 +1,7 @@
 # Бот-каталог Telegram-каналов
 
+![python](https://img.shields.io/badge/python-3.12-blue?style=flat-square) ![django](https://img.shields.io/badge/django-5.1.1-092E20?style=flat-square&logo=django) ![postgres](https://img.shields.io/badge/Postgres-16%20%2B%20PostGIS%203.5-336791?style=flat-square&logo=postgresql) ![redis](https://img.shields.io/badge/Redis-5.1.1-DC382D?style=flat-square&logo=redis) ![telegram](https://img.shields.io/badge/pyTelegramBotAPI-4.23.0-26A5E4?style=flat-square&logo=telegram) ![docker](https://img.shields.io/badge/Docker-compose-2496ED?style=flat-square&logo=docker)
+
 Бот собирает анкеты каналов и показывает их людям по интересам и геолокации. Владелец канала заполняет анкету прямо в боте: фото, описание, город, хэштеги. Пользователь листает ленту подборок, ставит лайк и по лайку получает ссылку на канал. Обновления от Telegram приходят вебхуком, Django работает в асинхронном режиме, гео-фильтр построен на PostGIS.
 
 ## Зачем это
