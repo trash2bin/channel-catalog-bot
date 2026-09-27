@@ -16,7 +16,8 @@
             "comment_status" : "Отправьте нам свой коментарий максимум <b>512</b> символов: ",
             "coment_complite": "Успешно отправлено💬",
             "change_complete": "Успешно сохранено!✅",
-            "change_complete_categories" : "Новые категории успешно сохранено!✅"
+            "change_complete_categories" : "Новые категории успешно сохранено!✅",
+            "feed_end" : "Новых каналов пока нет, заходите позже"
         },
         "errors": {
             "ban" : "Вас забанили",
@@ -67,7 +68,8 @@
 
     "en": {
         "general": {
-            "welcome": "Hello! Welcome to our bot."
+            "welcome": "Hello! Welcome to our bot.",
+            "feed_end" : "No new channels yet, come back later."
         },
         "errors": {
             "generic_error": "Oops! Something went wrong.",

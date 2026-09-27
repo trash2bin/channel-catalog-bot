@@ -8,7 +8,6 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot import types
 
 from django.core.cache import cache
-from django.contrib.gis.geos import Point
 from django.db.models import Q, F
 from django.contrib.gis.measure import D
 
@@ -59,10 +58,12 @@ async def generate_recommendations(user: User) -> list:
     channels = Channel.objects.filter(is_work=True).exclude(external_id__in=viewed_channels)
 
     # Учет геолокации
-    if user.region:
+    if user.region and user.location:
         channels = channels.filter(
-            Q(region=user.region) | Q(location__distance_lte=(Point(user.location), D(km=50)))
+            Q(region=user.region) | Q(location__distance_lte=(user.location, D(km=50)))
         )
+    elif user.region:
+        channels = channels.filter(region=user.region)
     else:
         channels = channels.all()
 
@@ -75,7 +76,9 @@ async def generate_recommendations(user: User) -> list:
 
     # Выборка каналов по интересам (70%)
     interest_based_count = int(0.7 * 10)  # 70% от 10 рекомендаций
-    interest_based = list(interest_based.order_by("-add_time")[:interest_based_count].all())
+    interest_based = [
+        ch async for ch in interest_based.order_by("-add_time")[:interest_based_count]
+    ]
 
     # Выборка случайных каналов (30%)
     random_count = 10 - len(interest_based)
@@ -117,11 +120,19 @@ async def recommendations_feed(message: types.Message, bot: AsyncTeleBot, user_i
         # Сохраняем в кэш список рекомендаций     
         await cache.aset(f'{user_id}-recommendations', recommendations, 60*60)
 
+    if not recommendations:
+        await bot.send_message(message.chat.id, await get_message_text("general", "feed_end"))
+        return
+
     # Берем канал для отправки
     channel = recommendations[0]
     # Удаялем
     recommendations.pop(0) 
     await cache.aset(f'{user_id}-recommendations', recommendations, 60*60)
+
+    viewed = await cache.aget(f"user:{user_id}:viewed", [])
+    if channel.external_id not in viewed:
+        await cache.aset(f"user:{user_id}:viewed", (viewed + [channel.external_id])[-200:], 60*60*24*3)
     
     caption = anketa_text(
         channel.title,
