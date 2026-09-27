@@ -29,6 +29,9 @@ register_handlers(bot)
 
 #! Проверка и установка вебхука
 async def ensure_webhook():
+    if not settings.WEBHOOK_BASE_URL:
+        print("BASE_URL не задан — установка вебхука пропущена.")
+        return False
     webhook_info = await bot.get_webhook_info(5)
     # Проверяем, установлен ли вебхук на нужный URL
     if webhook_info.url == WEBHOOK_URL:
@@ -41,4 +44,5 @@ async def ensure_webhook():
         await bot.set_webhook(url=WEBHOOK_URL)
         print(f"✅ Новый вебхук установлен на {await bot.get_webhook_info()}\n")
     # Закрытие сессии
-    await bot.close_session()    
+    await bot.close_session()
+    return True

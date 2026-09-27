@@ -4,7 +4,7 @@ WORKDIR /app
 
 # gdal-bin libgdal-dev  -- для геолокаций
 RUN apt-get update && apt-get install -y bash \
-    gdal-bin libgdal-dev \ 
+    gdal-bin libgdal-dev \
     && apt-get clean
 
 RUN pip install --upgrade pip

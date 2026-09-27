@@ -123,7 +123,7 @@ class Complaint(models.Model):
         verbose_name_plural = 'Жалобы'
 
     def __str__(self):
-        return f'Жалобы для {self.channel.name}: {self.category}'
+        return f'Жалобы для {self.channel.title}: {self.category}'
     
 
 

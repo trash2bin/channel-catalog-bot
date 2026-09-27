@@ -2,13 +2,21 @@ services:
   db:
     container_name: db
     image: postgis/postgis:16-3.5
+    platform: linux/amd64
     restart: always
-    env_file:
-      - tgBot2/.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bot}
+      POSTGRES_USER: ${POSTGRES_USER:-bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bot}
     volumes:
-      - ./postgres:/var/lib/postgressql/data
+      - ./postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bot} -d ${POSTGRES_DB:-bot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:alpine
@@ -17,6 +25,11 @@ services:
     volumes:
       - redis_data:/data
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # rabbitmq:
   #   image: rabbitmq:3-management  # Образ RabbitMQ с веб-интерфейсом
@@ -51,21 +64,30 @@ services:
     build: .
     restart: always
     command: >
-      sh -c " sleep 2 &&
-      python manage.py makemigrations &&
-      python manage.py migrate &&
+      sh -c "python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
       python manage.py webhookstart &&
-      sleep 1 &&
       uvicorn tgBot2.asgi:application --host 0.0.0.0 --port 8000 --reload"
     volumes:
-      - ./txt_files:/tgBot2 # python manage.py runserver 0.0.0.0:8000 
       - ./:/app              # Добавляем том для кода, чтобы изменения применялись сразу
-    ports:                  # uvicorn tgBot2.asgi:application --host 0.0.0.0 --port 8000"
-      - "8000:8000"         # gunicorn --workers 3 --bind 0.0.0.0:8000 tgBot2.wsgi:application"
+    ports:
+      - "8000:8000"
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - SOME_VAR=${y1:-default_value}
+      SECRET_KEY: ${SECRET_KEY:-dev-insecure-secret-key}
+      DEBUG: ${DEBUG:-True}
+      POSTGRES_DB: ${POSTGRES_DB:-bot}
+      POSTGRES_USER: ${POSTGRES_USER:-bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bot}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      LOCAL_CACHE_DIR: /app/var/local_cache
+      BOT_TOKEN: ${BOT_TOKEN:-1234567890:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+      BASE_URL: ${BASE_URL:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 
 # Определяем том для PostgreSQL

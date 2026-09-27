@@ -810,7 +810,7 @@ async def add_channel_parsing(message: types.Message, bot: AsyncTeleBot):
         # Сохраняем данные о канале во временное хранилище (Redis или кэш)
         cache.set(f"{message.from_user.id}-channel", channel, settings.CACHE_CREATE)
         # Описание в кэш чтобы не было багов если что
-        cache.set(f'{channel.description}-descriptionChannal', settings.CACHE_CREATE)
+        cache.set(f'{message.from_user.id}-descriptionChannal', channel.description, settings.CACHE_CREATE)
 
         folowers = await bot.get_chat_member_count(channel.id)       
         await cache.aset(f'{message.from_user.id}-folowers', folowers, settings.CACHE_CREATE)
